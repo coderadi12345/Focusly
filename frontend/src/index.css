@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900 dark:bg-[#0B0B0F] dark:text-[#E6EDF3] font-sans antialiased transition-colors duration-500;
+  }
+}
+
+/* Custom scrollbar to keep it clean */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
