@@ -13,29 +13,53 @@ const Dashboard = () => {
     completionRate: 0,
   });
 
-  // Example AI Plan Cards
-  const aiPlans = [
-    { subject: 'Calculus III', timeBlock: '10:00 AM - 12:00 PM', progress: 65, color: 'from-blue-500 to-cyan-400', statCol: 'shadow-cyan-500/20' },
-    { subject: 'Data Structures', timeBlock: '2:00 PM - 3:30 PM', progress: 30, color: 'from-purple-500 to-pink-500', statCol: 'shadow-purple-500/20' },
-    { subject: 'Physics Resnick', timeBlock: '5:00 PM - 6:30 PM', progress: 0, color: 'from-orange-500 to-red-500', statCol: 'shadow-red-500/20' }
-  ];
+  const [tasks, setTasks] = useState([]);
 
   useEffect(() => {
-    const fetchAnalytics = async () => {
+    const fetchData = async () => {
       try {
-        const { data } = await api.get('/analytics');
+        const [analyticsRes, scheduleRes] = await Promise.all([
+          api.get('/analytics'),
+          api.get('/schedule')
+        ]);
+        
         setStats({
-          totalSubjects: data.totalSubjects,
-          pendingTasksCount: data.pendingTasksCount,
-          completedTasksCount: data.completedTasksCount,
-          completionRate: data.completionRate,
+          totalSubjects: analyticsRes.data.totalSubjects,
+          pendingTasksCount: analyticsRes.data.pendingTasksCount,
+          completedTasksCount: analyticsRes.data.completedTasksCount,
+          completionRate: analyticsRes.data.completionRate,
         });
+        
+        setTasks(scheduleRes.data);
       } catch (error) {
-        console.error('Error fetching dashboard stats', error);
+        console.error('Error fetching dashboard data', error);
       }
     };
-    fetchAnalytics();
+    fetchData();
   }, []);
+
+  const todayPlans = (() => {
+    const today = new Date().toDateString();
+    const todaysTasks = tasks.filter(t => new Date(t.date).toDateString() === today);
+    
+    const colors = [
+      { color: 'from-blue-500 to-cyan-400', statCol: 'shadow-cyan-500/20' },
+      { color: 'from-purple-500 to-pink-500', statCol: 'shadow-purple-500/20' },
+      { color: 'from-orange-500 to-red-500', statCol: 'shadow-red-500/20' },
+      { color: 'from-green-500 to-emerald-400', statCol: 'shadow-green-500/20' },
+    ];
+
+    return todaysTasks.map((task, i) => {
+      const colorSet = colors[i % colors.length];
+      return {
+        id: task._id,
+        subject: task.subject?.name || 'Study Task',
+        timeBlock: `${task.durationHours} hrs`,
+        progress: task.isCompleted ? 100 : 0,
+        ...colorSet
+      };
+    });
+  })();
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -72,10 +96,6 @@ const Dashboard = () => {
           </h1>
           <p className="text-gray-500 dark:text-[#9DA7B3] mt-3 md:text-lg font-medium">Here is your AI-optimized schedule for today.</p>
         </div>
-        <button className="flex items-center gap-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-6 py-3 rounded-xl font-semibold text-sm transition-all hover:scale-105 active:scale-95 shadow-xl shadow-gray-900/10 dark:shadow-white/10 hover:shadow-gray-900/20 dark:hover:shadow-white/20">
-          <Sparkles className="w-4 h-4" />
-          <span>Regenerate Plan</span>
-        </button>
       </motion.div>
 
       {/* AI Study Plan Cards */}
@@ -84,47 +104,50 @@ const Dashboard = () => {
           <h2 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
             <Sparkles className="w-6 h-6 text-indigo-500" /> Today's Focus
           </h2>
-          <button className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center transition-colors">
-            View Calendar <ChevronRight className="w-4 h-4 ml-1" />
-          </button>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-8">
-          {aiPlans.map((plan, index) => (
-             <motion.div 
-                key={index}
-                whileHover={{ scale: 1.02, y: -4 }}
-                className={`bg-white dark:bg-[#161B22] border border-gray-100 dark:border-white/5 rounded-3xl p-6 shadow-sm dark:shadow-none transition-all duration-300 hover:shadow-2xl dark:hover:shadow-lg dark:hover:${plan.statCol} flex flex-col justify-between`}
-             >
-                <div className="flex justify-between items-start mb-6">
-                   <div className={`p-3 rounded-2xl bg-gradient-to-br ${plan.color} text-white shadow-lg`}>
-                     <Book className="w-6 h-6" />
-                   </div>
-                   <span className="text-xs font-bold text-gray-600 dark:text-[#9DA7B3] bg-gray-100 dark:bg-[#0D1117] border border-transparent dark:border-white/5 py-1.5 px-3 rounded-lg flex items-center gap-1.5">
-                     <Clock className="w-3.5 h-3.5" /> {plan.timeBlock}
-                   </span>
-                </div>
-                <div>
-                   <h3 className="font-extrabold text-gray-900 dark:text-white text-xl tracking-tight">{plan.subject}</h3>
-                   
-                   <div className="mt-6">
-                     <div className="flex justify-between text-sm font-semibold mb-2 text-gray-600 dark:text-gray-400">
-                       <span>Progress</span>
-                       <span>{plan.progress}%</span>
+        {todayPlans.length === 0 ? (
+          <div className="w-full bg-white dark:bg-[#161B22] p-8 rounded-3xl border border-gray-100 dark:border-white/5 text-center shadow-sm">
+             <p className="text-gray-500 dark:text-[#9DA7B3] font-medium text-lg">No tasks scheduled for today. Take a break or generate a new plan!</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-8">
+            {todayPlans.map((plan, index) => (
+               <motion.div 
+                  key={plan.id || index}
+                  whileHover={{ scale: 1.02, y: -4 }}
+                  className={`bg-white dark:bg-[#161B22] border border-gray-100 dark:border-white/5 rounded-3xl p-6 shadow-sm dark:shadow-none transition-all duration-300 hover:shadow-2xl dark:hover:shadow-lg dark:hover:${plan.statCol} flex flex-col justify-between`}
+               >
+                  <div className="flex justify-between items-start mb-6">
+                     <div className={`p-3 rounded-2xl bg-gradient-to-br ${plan.color} text-white shadow-lg`}>
+                       <Book className="w-6 h-6" />
                      </div>
-                     <div className="w-full bg-gray-100 dark:bg-[#0D1117] rounded-full h-2 overflow-hidden shadow-inner">
-                       <motion.div 
-                          initial={{ width: 0 }}
-                          animate={{ width: `${plan.progress}%` }}
-                          transition={{ duration: 1.2, ease: 'easeOut', delay: 0.3 }}
-                          className={`h-full rounded-full bg-gradient-to-r ${plan.color}`}
-                       />
+                     <span className="text-xs font-bold text-gray-600 dark:text-[#9DA7B3] bg-gray-100 dark:bg-[#0D1117] border border-transparent dark:border-white/5 py-1.5 px-3 rounded-lg flex items-center gap-1.5">
+                       <Clock className="w-3.5 h-3.5" /> {plan.timeBlock}
+                     </span>
+                  </div>
+                  <div>
+                     <h3 className="font-extrabold text-gray-900 dark:text-white text-xl tracking-tight">{plan.subject}</h3>
+                     
+                     <div className="mt-6">
+                       <div className="flex justify-between text-sm font-semibold mb-2 text-gray-600 dark:text-gray-400">
+                         <span>Progress</span>
+                         <span>{plan.progress}%</span>
+                       </div>
+                       <div className="w-full bg-gray-100 dark:bg-[#0D1117] rounded-full h-2 overflow-hidden shadow-inner">
+                         <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: `${plan.progress}%` }}
+                            transition={{ duration: 1.2, ease: 'easeOut', delay: 0.3 }}
+                            className={`h-full rounded-full bg-gradient-to-r ${plan.color}`}
+                         />
+                       </div>
                      </div>
-                   </div>
-                </div>
-             </motion.div>
-          ))}
-        </div>
+                  </div>
+               </motion.div>
+            ))}
+          </div>
+        )}
       </motion.div>
 
       {/* Stats Section */}

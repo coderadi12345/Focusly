@@ -109,17 +109,25 @@ const completeTask = async (req, res) => {
       return res.status(401).json({ message: 'Not authorized' });
     }
 
-    task.isCompleted = req.body.isCompleted !== undefined ? req.body.isCompleted : true;
-    const updatedTask = await task.save();
+    const previousStatus = task.isCompleted;
+    const newStatus = req.body.isCompleted !== undefined ? req.body.isCompleted : true;
+    
+    if (previousStatus !== newStatus) {
+      task.isCompleted = newStatus;
+      await task.save();
 
-    // Update subject completed hours
-    if (task.isCompleted) {
-        const subject = await Subject.findById(task.subject);
-        subject.completedHours += task.durationHours;
+      const subject = await Subject.findById(task.subject);
+      if (subject) {
+        if (newStatus) {
+          subject.completedHours += task.durationHours;
+        } else {
+          subject.completedHours = Math.max(0, subject.completedHours - task.durationHours);
+        }
         await subject.save();
+      }
     }
 
-    res.json(updatedTask);
+    res.json(task);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

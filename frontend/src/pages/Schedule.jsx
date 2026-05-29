@@ -26,7 +26,11 @@ const Schedule = () => {
       fetchSchedule();
     } catch (error) {
       console.error('Error generating schedule', error);
-      alert('Failed to generate schedule');
+      if (error.response && error.response.status === 400) {
+        alert(error.response.data.message || 'Please add subjects before generating a schedule.');
+      } else {
+        alert('Failed to generate schedule. Please try again.');
+      }
     } finally {
       setGenerating(false);
     }

@@ -4,7 +4,15 @@ import { Target, Zap, Clock, Activity } from 'lucide-react';
 import api from '../api/axios';
 
 const Analytics = () => {
-  const [stats, setStats] = useState(null);
+  const [stats, setStats] = useState({
+    totalSubjects: 0,
+    totalEstimatedHours: 0,
+    totalCompletedHours: 0,
+    completionRate: 0,
+    completedTasksCount: 0,
+    pendingTasksCount: 0,
+    studyHoursPerDay: { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 }
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,12 +29,10 @@ const Analytics = () => {
     fetchStats();
   }, []);
 
-  if (!stats && !loading) return null;
-
-  const chartData = stats ? Object.keys(stats.studyHoursPerDay).map(day => ({
+  const chartData = Object.keys(stats.studyHoursPerDay).map(day => ({
     name: day,
     hours: stats.studyHoursPerDay[day]
-  })) : [];
+  }));
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
@@ -101,7 +107,7 @@ const Analytics = () => {
             <h2 className="text-2xl font-bold text-gray-800">Study Velocity (7 Days)</h2>
         </div>
         <div className="w-full h-[400px] flex justify-center">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="99%" height="100%">
             <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} barSize={44}>
               <defs>
                   <linearGradient id="purpleGradient" x1="0" y1="0" x2="0" y2="1">
@@ -113,7 +119,7 @@ const Analytics = () => {
               <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 13, fontWeight: 600 }} dy={10} />
               <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 13, fontWeight: 600 }} dx={-10} />
               <Tooltip cursor={{ fill: '#f8fafc' }} content={<CustomTooltip />} />
-              <Bar dataKey="hours" fill="url(#purpleGradient)" radius={[6, 6, 0, 0]} className="hover:opacity-80 transition-opacity duration-300" />
+              <Bar dataKey="hours" fill="url(#purpleGradient)" radius={[6, 6, 0, 0]} className="hover:opacity-80 transition-opacity duration-300" isAnimationActive={false} />
             </BarChart>
           </ResponsiveContainer>
         </div>

@@ -16,7 +16,6 @@ import FocusMode from './pages/FocusMode';
 // Components
 import Sidebar from './components/Sidebar';
 import TopBar from './components/TopBar';
-import AIAssistant from './components/AIAssistant';
 
 const ProtectedRoute = ({ children }) => {
   const { user } = useContext(AuthContext);
@@ -64,8 +63,6 @@ const AppLayout = () => {
              <AnimatedRoutes />
           </div>
         </main>
-        {/* Floating AI Assistant Panel */}
-        <AIAssistant />
       </div>
     </div>
   );

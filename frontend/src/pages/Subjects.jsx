@@ -65,7 +65,7 @@ const Subjects = () => {
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Subject Name</label>
                     <input 
                     type="text" name="name" value={formData.name} onChange={handleChange} required
-                    className="w-full p-3 rounded-lg border focus:ring-2 focus:ring-indigo-400 outline-none transition"
+                    className="w-full p-3 rounded-lg border focus:ring-2 focus:ring-indigo-400 outline-none transition text-black"
                     placeholder="e.g. Data Structures"
                     />
                 </div>
@@ -73,14 +73,14 @@ const Subjects = () => {
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Target Deadline</label>
                     <input 
                     type="date" name="deadline" value={formData.deadline} onChange={handleChange} required
-                    className="w-full p-3 rounded-lg border focus:ring-2 focus:ring-indigo-400 outline-none transition"
+                    className="w-full p-3 rounded-lg border focus:ring-2 focus:ring-indigo-400 outline-none transition text-black"
                     />
                 </div>
                 <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Difficulty</label>
                     <select 
                     name="difficulty" value={formData.difficulty} onChange={handleChange}
-                    className="w-full p-3 rounded-lg border focus:ring-2 focus:ring-indigo-400 outline-none transition appearance-none"
+                    className="w-full p-3 rounded-lg border focus:ring-2 focus:ring-indigo-400 outline-none transition appearance-none text-black"
                     >
                     <option>Easy</option>
                     <option>Medium</option>
@@ -91,7 +91,7 @@ const Subjects = () => {
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Estimated Total Hours</label>
                     <input 
                     type="number" name="estimatedHours" min="1" value={formData.estimatedHours} onChange={handleChange} required
-                    className="w-full p-3 rounded-lg border focus:ring-2 focus:ring-indigo-400 outline-none transition"
+                    className="w-full p-3 rounded-lg border focus:ring-2 focus:ring-indigo-400 outline-none transition text-black"
                     placeholder="e.g. 20"
                     />
                 </div>
